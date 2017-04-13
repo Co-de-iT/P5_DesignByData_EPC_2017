@@ -1,6 +1,6 @@
-// parameters and variables are collected here
+// parameters and global variables are collected here
 
-
+String meshFile = "spheres_fused.stl"; // if you want to import a different mesh change this
 
 ArrayList<Agent> agents;
 AgentBody[] bodies;
@@ -13,18 +13,19 @@ float wY = 600;
 float wZ = 200;
 
 boolean meshDisp = true;
-boolean trailDisp=true;
-boolean trailMode=true;
-boolean crawl = true;
+boolean trailDisp=false;
+boolean trailMode=false;
 boolean go = false;
 boolean strandDone = false;
 boolean phase2=false;
 boolean makeBod = false;
 boolean lock = false;
+boolean debugView = false;
+boolean fieldDisp = true;
+boolean vidRec = false;
 float cR, cI, sR, sI, aR, aI; // cohesion & separation radius & intensity
 
 
-String meshFile = "spheres_fused.stl";
 AEMesh mesh;
 AABB bBox;
 ToxiclibsSupport gfx;
@@ -32,7 +33,7 @@ Vec3D vS, pivot, extent;
 Vec3D samplePt;
 Vertex sample;
 int nVerts, id=0;
-int viewMode = 2;
+int viewMode = 0;
 int[] neighV;
 
 PointOctree trailOctree;

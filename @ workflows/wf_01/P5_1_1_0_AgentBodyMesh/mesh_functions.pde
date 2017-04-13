@@ -13,7 +13,15 @@ void initMesh() {
 void meshDisplay(AEMesh mesh, int viewMode) {
   Vec3D norm;
   switch(viewMode) { //alike stream gates in GH
-  case 0:
+  case 0: //wireframe
+    pushStyle();
+    stroke(100, 40);
+    strokeWeight(1);
+    noFill();
+    gfx.mesh(mesh, false);
+    popStyle();
+    break;
+  case 1:
     pushStyle();
     fill(55);
     lightSpecular(230, 255, 255);
@@ -27,7 +35,7 @@ void meshDisplay(AEMesh mesh, int viewMode) {
     noLights();
     popStyle();
     break;
-  case 1:
+  case 2:
     pushStyle();
     noStroke();
     gfx.meshNormalMapped(mesh, true);
@@ -41,15 +49,7 @@ void meshDisplay(AEMesh mesh, int viewMode) {
     }
     popStyle();
     break;
-  case 2:
-  pushStyle();
-  stroke(100,40);
-  strokeWeight(1);
-  noFill();
-  gfx.mesh(mesh, false);
-  popStyle();
-  break;
-  case 3:
+  case 3: // colored mesh vertices
     pushStyle();
     noFill();
     stroke(0);
@@ -60,22 +60,7 @@ void meshDisplay(AEMesh mesh, int viewMode) {
     }
     popStyle();
     break;
-  case 4: // this mode for debug only
-  /*
-    pushStyle();
-    noFill();
-    stroke(255, 0, 0);
-    strokeWeight(2);
-    fill(0);
-    textSize(2);
-    for (Vertex v : mesh.vertices.values()) {
-      point(v.x, v.y, v.z);
-      textAtPoint(v, str(v.id), cam);
-    }
-    popStyle();
-    */
-    break;
-  case 5:
+  case 4: // colored mesh
     shape(mesh.cMesh, 0, 0);
     break;
   }

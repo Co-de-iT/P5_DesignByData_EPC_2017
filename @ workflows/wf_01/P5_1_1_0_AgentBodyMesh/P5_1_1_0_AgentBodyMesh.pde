@@ -1,21 +1,36 @@
 /*
 
+ Encoded Bodies/Embodied Codes
+ 
+ Processing workshop @ Design By Data ws - EPC Paris
+ 
+ Workflow 01 /////////////////////// Agent Bodies on Mesh surface
+ 
  Code by Alessio Erioli
  
  (c) Co-de-iT 2017
  
- includes an extended TriangleMesh class to implement vertex topology & vertex color + 
- some mesh helping functions
+ includes:
  
- keys:
+ . an extended TriangleMesh class to implement vertex topology & vertex color + some mesh helping functions
+ . Agent, AgentBody, Strand, Body, Tip, TensorPt classes
  
+ key map:
+ 
+ ' '   (space bar) go/pause
  1-5   viewmodes
  m     cycles through viewmodes
- y     inverts y display to match CAD systems (but messes with text and other settings, that's why is a toggle mode and not permanent
- v     cycles through vertices and shows connected vertices and faces
- o     display octree points
  T/t   display agent trails/change trail style
+ f     display field
+ d     debug view (bounding boxes, octrees, etc)
+ . o     display octree points (under debug view)
  
+ b     generate bodies (phase 2)
+ l     lock bodies (phase 2)
+ e     export bodies to file
+ 
+ i     save screenshot image
+ v     video recording on/off
  
  */
 
@@ -30,7 +45,8 @@ import java.util.*;
 void setup() {
 
   size(1400, 900, P3D);
-
+  //fullScreen(P3D); // uncheck this and check size() to see the sketch fullscreen
+  smooth(8);
 
 
   //
@@ -47,7 +63,7 @@ void setup() {
   extent = mesh.getBoundingBox().getExtent(); // AABB diagonal vector
   pivot = bBox.getMin().add(bBox.getMax()).scale(0.5); // finds mesh pivot (the AABB center)
 
-  world = new Vec3D(extent.x*3, extent.y*3, extent.z*3);
+  world = new Vec3D(extent.x*3, extent.y*3, extent.z*3); // define the world extent for agents
 
   //
   // _______________________________ octree settings _______________________________
@@ -72,18 +88,6 @@ void setup() {
   //
   //
 
-  //// sample a closest point
-  //samplePt = new Vec3D(random(-extent.x*0.5, extent.x*0.5), random(-extent.y*0.5, extent.y*0.5), 
-  //  random(-extent.z*0.5, extent.z*0.5));
-
-  //try {
-  //  sample = mesh.getClosestVertexToPoint(samplePt);
-  //}
-  //catch(Error e) {
-  //  println(e);
-  //  println("point not found");
-  //  sample = new Vertex(new Vec3D(), 0); // if a closest point is not found then create a vertex in the center
-  //}
 
   //
   // _______________________________ display and view settings _______________________________
@@ -125,13 +129,7 @@ void draw() {
   // _______________________________ preliminary operations _______________________________
   //
 
-  //background (240); // almost white
   background(237, 168, 226); // nice pink shade
-
-  // equals the coordinate system with those of 3D CAD (such as Rhino, 3DSMax, etc.)
-  // usually, shapes are mirrored because Y points down here
-  // but messes with text and some other settings, so use just as verification
-  if (invY)scale(1, -1.1);
 
   //
   // _______________________________ update section _______________________________
@@ -147,26 +145,26 @@ void draw() {
       for (Agent ag : agents) {
 
         /*
-    if (crawl) {
+         if (crawl) {
          //ag.meshCrawl(mesh); // crawls following vertices positions only
          //ag.updateTrail(1); // use with meshCrawl
          }
          */
         //ag.updateOnMesh(agents, mesh, .2, false);
         ag.updateOnMeshField(agents, octree, .1, mesh, .2, false);
-        //ag.addForce(new Vec3D(.1,0,0));
+        //ag.addForce(new Vec3D(.1,0,0)); // adds a directional force to the agent
         ag.display();
         ag.strand.display();
-        //Vertex v = ag.getOctClosest(octree);
-        //ag.dispVertex(v);
         if (trailDisp) {
           if (trailMode) ag.dispTrailCurve();
           else ag.dispTrail(2);
         }
-        if (!ag.strand.done)strandDone = false; // boolean "self-and" operator - when all strands are done it becomes true
+        if (!ag.strand.done)strandDone = false; // checks if all strands are done
       } // end for (Agent ag : agents)
     }
 
+
+    // if switching to phase 2 makes and/or updates bodies
     if (phase2 && strandDone) {
       if (!makeBod) {
         bodies = makeBodies(mesh, agents);
@@ -180,8 +178,6 @@ void draw() {
     for (Agent ag : agents) {
       ag.display();
       ag.strand.display();
-      //Vertex v = ag.getOctClosest(octree);
-      //ag.dispVertex(v);
       if (trailDisp) {
         if (trailMode) ag.dispTrailCurve();
         else ag.dispTrail(2);
@@ -201,80 +197,61 @@ void draw() {
   // __________________________ mesh section
 
   if (meshDisp) meshDisplay(mesh, viewMode);
-  if (viewOct) octDisplay(octPts); // octDisplay(octree);
+  if (viewOct) octDisplay(octPts);
 
 
   // __________________________ bounding box section
 
-  pushMatrix();
-  pushStyle();
+  if (debugView) {
+    pushStyle();
+    noFill();
+    strokeWeight(1);
+    stroke(255, 40);
+    gfx.mesh(octree.toMesh());
+    stroke(0, 40);
+    gfx.mesh(bBox.toMesh());
 
-  noFill();
-  strokeWeight(1);
-  stroke(255, 40);
-  gfx.mesh(octree.toMesh());
-  stroke(0, 40);
-  gfx.mesh(bBox.toMesh());
-
-  //noStroke();
-  noFill();
-  stroke(0, 80);
-  strokeWeight(.5);
-  //rect(0, 0, wX, wY);
-  box(world.x, world.y, world.z);
-
+    //noStroke();
+    noFill();
+    stroke(0, 80);
+    strokeWeight(.5);
+    //rect(0, 0, wX, wY);
+    box(world.x, world.y, world.z);
+    popStyle();
+  }
 
   // __________________________ "the rest" section
 
- // if (meshDisp) {
-    // draw vertex & neighbors if viewMode != 3
-    //if (viewMode !=3) {
-    //  mesh.neighDisplay(id); // display vertex neighbors
-    //  mesh.neighFDisplay(id); // display vertex face neighbors
+  // field display
+  if (fieldDisp) mesh.tgFDisplay(10);
 
-      // write text next to selected vertex
-      //alignAtPoint(vS, cam); 
-      //stroke(255);
-      //strokeWeight(10);
-      //point(0, 0, 0);
-      //fill(255);
-      //textSize(5);
-      //text(" __________________ this is vertex "+id, 0, 0);
-    //}
-  //}
-  popStyle();
-  popMatrix();
-
-  // tangent field display
-  if (!strandDone) mesh.tgFDisplay(5);
-
-
-  // display mesh closest point to a sample point
-  //stroke(255);
-  //strokeWeight(10);
-  //point(samplePt.x, samplePt.y, samplePt.z);
-  //point(sample.x, sample.y, sample.z);
-  //strokeWeight(1);
-  //line(samplePt.x, samplePt.y, samplePt.z, sample.x, sample.y, sample.z);
+  if (vidRec) {
+    saveFrame("video/AgentBodyMesh_####.jpg");
+    cam.beginHUD();
+    pushStyle();
+    noStroke();
+    fill(255, 0, 0);
+    rect(10, 10, 10, 10);
+    popStyle();
+    cam.endHUD();
+  }
 }
 
 
 void keyPressed() {
-  if (key>'0' && key<'7') viewMode = int(key)-int('1');
-  if (key=='m') viewMode = (viewMode+1)%6; // cycles through viewModes
+  if (key>'0' && key<'7') viewMode = int(key)-int('1'); // controls Mesh viewModes
+  if (key=='m') viewMode = (viewMode+1)%5; // cycles through viewModes
   if (key=='M') meshDisp = !meshDisp;
-
-  if (key=='v') { // goes through vertices list
-    id= (id+1)%nVerts;
-    vS = mesh.getVertexForID(id);
-  }
   if (key=='o') viewOct = !viewOct;
-  if (key == 'T') trailDisp = !trailDisp;
-  if (key == 't') trailMode = !trailMode;
-  if (key =='y')invY = !invY;
-  if (key=='c') crawl = !crawl;
+  if (key=='T') trailDisp = !trailDisp;
+  if (key=='t') trailMode = !trailMode;
+  if (key=='f') fieldDisp = !fieldDisp;
+  if (key=='d') debugView = !debugView;
+  if (key=='i') saveFrame("img/AgentBodyMesh_####.png");
+  if (key=='v') vidRec = !vidRec;
   if (key==' ') go = !go;
-  if (key=='e') exportBodies(bodies, "Y_struct");
-  if (key=='2') phase2 = true;
+
+  if (key=='b') phase2 = true;
   if (key=='l') lock = true;
+  if (key=='e') exportBodies(bodies, "Y_struct");
 }
