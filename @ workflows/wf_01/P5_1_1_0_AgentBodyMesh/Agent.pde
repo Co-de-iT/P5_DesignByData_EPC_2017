@@ -21,7 +21,7 @@ class Agent {
   Vec3D world;
 
 
-  Agent(Vec3D pos, Vec3D vel, Vec3D world) {
+  Agent(Vec3D pos, Vec3D vel, int strandLen, Vec3D world) {
     this.pos = pos;
     this.vel = vel;
     this.world = world;
@@ -35,8 +35,13 @@ class Agent {
     angVis = PI*0.3;
     fMag = 5;
     fPos = pos.add(vel.scale(fMag)); // future position
-    strand = new Strand(20);// 20
+    strand = new Strand(strandLen);// 20
     strPtCount = 0;
+  }
+
+  Agent(Vec3D pos, Vec3D vel, Vec3D world) {
+    this(pos,vel,20,world);
+
   }
 
   void update(ArrayList<Agent> agents, boolean ease) {

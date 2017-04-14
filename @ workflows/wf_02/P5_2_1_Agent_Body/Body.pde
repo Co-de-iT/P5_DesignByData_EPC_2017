@@ -45,14 +45,15 @@ class Body {
       // tri-fork asymmetrical shape
       core = new Vec3D();
       forward = new Vec3D(0, 0, 1);
-      tips = new Tip[3];
-      pos = new Vec3D(10, 0, 0).rotateZ(PI*0.4);
+      tips = new Tip[4];
+      pos = new Vec3D(20, 0, 0).rotateZ(PI*0.4);
       tips[0] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3); // because base is (0,0,0)
-      pos = new Vec3D(13, 0, 0).rotateZ(PI*0.7);
+      pos = new Vec3D(18, 0, 0).rotateZ(PI*0.7);
       tips[1] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
       pos = new Vec3D(15, 0, 0).rotateZ(PI*1.6);
       tips[2] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
-
+      pos = new Vec3D(0, 0, -10);
+      tips[3] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
       scale(1.5);
       break; 
 

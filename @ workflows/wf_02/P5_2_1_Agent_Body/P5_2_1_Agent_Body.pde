@@ -14,6 +14,11 @@
  
  . AgentBody, Body, Tip, TensorPt classes
  
+ /////////////////////// NOTE ON *BODY TYPE* SELECTION /////////////////////// 
+ 
+ body type is inherited from the agents.txt file and it is set in Grasshopper, in the 2_0_voxelize.gh file
+ (see the export agent section in the GH file - the last expression component before the export has a "type" panel attached)
+ 
  key map:
  
  ' '   (space bar) go/pause
@@ -117,5 +122,5 @@ void keyPressed() {
   if (key==' ') go = !go;
   if (key=='l') lock = true;
   if (key=='d') debugView = !debugView;
-  if (key=='e') exportBodies(agents, "Y_struct");
+  if (key=='e') exportBodies(agents, "Y_struct_topo");
 }

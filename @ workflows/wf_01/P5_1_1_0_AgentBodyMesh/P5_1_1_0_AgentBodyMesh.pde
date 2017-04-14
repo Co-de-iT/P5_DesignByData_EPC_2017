@@ -15,6 +15,16 @@
  . an extended TriangleMesh class to implement vertex topology & vertex color + some mesh helping functions
  . Agent, AgentBody, Strand, Body, Tip, TensorPt classes
  
+ 
+ /////////////////////// NOTE ON BODY TYPE SELECTION /////////////////////// 
+ 
+ body type is chosen when creating bodies from strands (tab Bodies_functions, makeBodies function)
+ 
+ /////////////////////// NOTE ON STRAND LENGTH SELECTION /////////////////////// 
+ 
+ Strand length is decided on import (see TXTimport_FieldAgents tab, at the end of importAgents function)
+ 
+ 
  key map:
  
  ' '   (space bar) go/pause
@@ -253,5 +263,5 @@ void keyPressed() {
 
   if (key=='b') phase2 = true;
   if (key=='l') lock = true;
-  if (key=='e') exportBodies(bodies, "Y_struct");
+  if (key=='e') exportBodies(bodies, "Y_struct_topo");
 }

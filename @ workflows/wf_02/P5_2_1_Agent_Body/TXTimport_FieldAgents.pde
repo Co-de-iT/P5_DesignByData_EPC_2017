@@ -42,7 +42,7 @@ AgentBody[] importAgents(String fileName) {
     // add type
     type = Integer.valueOf(elements[2]);
     
-    ag[i] = new AgentBody(pt,vec,type, false);
+    ag[i] = new AgentBody(pt,vec,type, false); // body type is inherited from the agents.txt file from GH
   }
   
   return ag;

@@ -1,6 +1,9 @@
+
+
 AgentBody[] makeBodies(AEMesh mesh, ArrayList<Agent> agents) {
   AgentBody[] bodies;
   int bC=0;
+  int type = 0; // body type at 0 by default
   Vec3D pos = new Vec3D();
   Vec3D vel = new Vec3D();
 
@@ -13,7 +16,8 @@ AgentBody[] makeBodies(AEMesh mesh, ArrayList<Agent> agents) {
     for (int i=0; i< a.strand.points.size(); i++) {
       pos = a.strand.points.get(i);
       vel = mesh.getClosestVertexToPoint(pos).normal;
-      bodies[count] = new AgentBody(pos, vel, false);
+      bodies[count] = new AgentBody(pos, vel, type, false); // here body type is selected
+      //bodies[count] = new AgentBody(pos, vel, a.strand.points.get(i).id, false); // here body type is selected according to strand point id
       count++;
     }
   }
