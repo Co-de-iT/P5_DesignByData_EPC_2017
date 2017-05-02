@@ -14,6 +14,20 @@
  
  . AgentBody, Body, Tip, TensorPt classes
  
+ /////////// DESIGN PARAMETERS ///////////
+ 
+ _ imported
+ . mesh to populate
+ . field
+ . agents start position + velocity
+ 
+ _ in here
+ . body type
+ . body: forward direction, tips number and position, tips search radius
+ . agent body behavior
+ . connection behavior
+ . export filename
+ 
  /////////////////////// NOTE ON *BODY TYPE* SELECTION /////////////////////// 
  
  body type is inherited from the agents.txt file and it is set in Grasshopper, in the 2_0_voxelize.gh file
@@ -95,8 +109,8 @@ void draw() {
     for (AgentBody a : agents) {
       // uncheck one or more for debug purposes
       //a.displayPos();
-      //a.displayPlane(10);
-      //a.displayAxis(10);
+      a.displayPlane(20);
+      a.displayAxis(10);
       //a.displayVel(10);
     }
     strokeWeight(1);
@@ -122,5 +136,5 @@ void keyPressed() {
   if (key==' ') go = !go;
   if (key=='l') lock = true;
   if (key=='d') debugView = !debugView;
-  if (key=='e') exportBodies(agents, "Y_struct_topo");
+  if (key=='e') exportBodies(agents, "_struct_topoXt");
 }

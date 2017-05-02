@@ -16,7 +16,7 @@ AgentBody[] makeBodies(AEMesh mesh, ArrayList<Agent> agents) {
     for (int i=0; i< a.strand.points.size(); i++) {
       pos = a.strand.points.get(i);
       vel = mesh.getClosestVertexToPoint(pos).normal;
-      bodies[count] = new AgentBody(pos, vel, type, false); // here body type is selected
+      bodies[count] = new AgentBody(pos, vel, count, type,TipSearchRadius, false); // here body type is selected
       //bodies[count] = new AgentBody(pos, vel, a.strand.points.get(i).id, false); // here body type is selected according to strand point id
       count++;
     }
@@ -25,18 +25,21 @@ AgentBody[] makeBodies(AEMesh mesh, ArrayList<Agent> agents) {
   return bodies;
 }
 
-void runBodies(AEMesh mesh, AgentBody[] bodies) {
+void runBodies(AEMesh mesh, AgentBody[] bodies, float align, float separate, float fI) {
 
   for (AgentBody a : bodies) {
     ////a.alignWithNeighbor(agents);
     ////a.alignWithNeighbors(agents, 80);
     //if (!a.locked && frameCount>200) a.locked = true; // locks agents after 200 frames
     if (lock) a.locked = true; // locks agents 
-    a.update(bodies, 80, 10);
-    a.alignWithField(mesh.tgField, 0.04);
+    a.update(bodies, align, separate); // cohesion and separation radiuses
+    a.alignWithField(mesh.tgField, fI);//0.04 - strong field influence
     ////a.displayPos();
-    ////a.displayPlane(10);
     a.displayBody();
+    if (debugView) {
+      noStroke();
+      a.displayPlane(20);
+    }
     ////a.displayAxis(10);
     ////a.displayVel(10);
   }

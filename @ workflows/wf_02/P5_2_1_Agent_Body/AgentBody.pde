@@ -11,6 +11,7 @@ class AgentBody {
    
    */
 
+  int id;
   float maxForce;
   Vec3D pos, vel;
   Plane plane;
@@ -19,20 +20,21 @@ class AgentBody {
   ArrayList<Line3D> Connections;
   // constructor(s)
 
-  AgentBody(Vec3D pos, Vec3D vel, int bType, boolean locked) {
+  AgentBody(Vec3D pos, Vec3D vel, int id, int bType, boolean locked) {
     this.pos = pos;
     this.vel = vel;
+    this.id=id;
     this.locked = locked;
     plane = new Plane(pos, vel);
     maxForce = 0.05;
-    body = new Body(bType); // creates a standard Body, type 0 (3-fork)
+    body = new Body(bType); 
     aligned = false;
     connected = false;
   }
 
 
-  AgentBody(Vec3D pos, Vec3D vel, boolean locked) {
-    this(pos, vel, 0, locked);
+  AgentBody(Vec3D pos, Vec3D vel, int id, boolean locked) {
+    this(pos, vel, id, 0, locked); // creates a standard Body, type 0 (3-fork)
   }
 
   void update(AgentBody[] agents, float aR, float sR) {
@@ -114,9 +116,70 @@ class AgentBody {
     plane = new Plane(pos, vel);
   }
 
-  // connect still buggy - see other strategies (check Gilles definition)
+  // connect:
+  //
+  // . if a free tip sees another free tip, join in the middle
+  // . if the other tip is already locked but still in range, move there
 
   void connect(AgentBody[] agents) {
+    float rr, ang;
+    Vec3D dir, target, average;
+    // for each of our tips (t)
+    for (Tip t : body.tips) {
+      // if tip hasn't reached max connections and it's not locked
+      if (t.connections.size() < t.maxConn && !t.locked) {
+        //dir = t.sub(body.core).normalize(); // calculates direction
+        rr = t.rad*t.rad; // calculates squared radius (allows faster comparisons for distance)
+        // scan all other agents
+        for (AgentBody other : agents) {
+          // but don't scan yourself
+          if (other != this) { 
+            // scan all other agents' tips (ot)
+            for (Tip ot : other.body.tips) {
+              // if other tip hasn't reached max connections
+              if (ot.connections.size()<ot.maxConn) {
+                target = ot.sub(t); // find target direction
+                // if other tip is within search radius 
+                if (target.magSquared()< rr) {
+                  //if (dir.angleBetween(target, true)<t.angVis) { // and within vision angle - visAng filter not working >> check
+                  // inAngle++;  
+                  
+                  // if other tip is already locked move there, else join in average point
+                  if (ot.locked) {
+                    t.set(ot);
+                    t.connections.add(ot);
+                    t.connInd.add(new TIndex(other.id,ot.id));
+                    ot.connections.add(t);
+                    ot.connInd.add(new TIndex(id,t.id));
+                    t.locked = true; 
+                    break;
+                  } else {
+                    average = t.add(ot).scale(0.5);
+                    t.set(average); // moveTo
+                    ot.set(average);// moveTo
+                    t.connections.add(ot);
+                    t.connInd.add(new TIndex(other.id,ot.id));
+                    ot.connections.add(t);
+                    ot.connInd.add(new TIndex(id,t.id));
+                    t.locked = true;
+                    ot.locked = true;
+                    break;
+                  }
+                  //}
+                }
+              }
+            }
+          } // end if (other != this)
+        } // end for (AgentBody other : agents)
+      } // end if t.conn
+      if (t.connections.size() == 0) t.locked = false;
+    } // end for (Tip t : body.tips)
+    connected = true;
+  }
+
+  // connects only one closest tip and then stops
+
+  void connectSingle(AgentBody[] agents) {
     float rr, ang;
     Vec3D dir, target, average;
     // for each of our tips (t)
@@ -152,6 +215,50 @@ class AgentBody {
             }
           } // end if (other != this)
         } // end for (AgentBody other : agents)
+      } // end if t.conn
+      if (t.connections.size() == 0) t.locked = false;
+    } // end for (Tip t : body.tips)
+    connected = true;
+  }
+
+  // performs a cohesion among tips (to be implemented)
+  void seekConnect(AgentBody[] agents) {
+    float rr, ang;
+    Vec3D dir, target, average;
+    // for each of our tips (t)
+    for (Tip t : body.tips) {
+      // if tip hasn't reached max connections and it's not locked
+      if (t.connections.size() < t.maxConn && !t.locked) {
+        //dir = t.sub(body.core).normalize(); // calculates direction
+        rr = t.rad*t.rad; // calculates squared radius (allows faster comparisons for distance)
+        // scan all other agents
+        for (AgentBody other : agents) {
+          // but don't scan yourself
+          if (other != this) { 
+            // scan all other agents' tips (ot)
+            for (Tip ot : other.body.tips) {
+              // if other tip hasn't reached max connections and not locked
+              if (ot.connections.size()<ot.maxConn && !ot.locked) {
+                target = ot.sub(t); // find target direction
+                // if other tip is within search radius 
+                if (target.magSquared()< rr) {
+                  //if (dir.angleBetween(target, true)<t.angVis) { // and within vision angle - visAng filter not working >> check
+                  // inAngle++;  
+                  average = t.add(ot).scale(0.5);
+                  t.set(average); // moveTo
+                  ot.set(average);// moveTo
+                  t.connections.add(ot);
+                  ot.connections.add(t);
+                  //t.locked = true;
+                  //ot.locked = true;
+                  //break;
+                  //}
+                }
+              }
+            }
+          } // end if (other != this)
+        } // end for (AgentBody other : agents)
+        t.cohesion();
       } // end if t.conn
       if (t.connections.size() == 0) t.locked = false;
     } // end for (Tip t : body.tips)

@@ -40,8 +40,7 @@ class Agent {
   }
 
   Agent(Vec3D pos, Vec3D vel, Vec3D world) {
-    this(pos,vel,20,world);
-
+    this(pos, vel, 20, world);
   }
 
   void update(ArrayList<Agent> agents, boolean ease) {
@@ -65,17 +64,18 @@ class Agent {
     updateStrand(10);
   }
 
-  void updateOnMeshField(ArrayList<Agent> agents, PointOctree field, float fI, AEMesh mesh, float mI, boolean ease) {
+  void updateOnMeshField(ArrayList<Agent> agents, PointOctree field, float fI, AEMesh mesh, float mI, boolean ease, int strandFreq) {
     flock(agents, cR, aR, sR, cI, aI, sI, ease);
     //separation(agents, sR, sI, ease);
     fieldMove(mesh, field, fI);
     meshMove(mesh, mI);
+    // strandFlock(agents,10); // still not working properly - try to activate it anyway if you want
 
     move();
     //bounce();
     wrap();
     updateTrail(5);
-    updateStrand(10);
+    updateStrand(strandFreq);
   }
 
 
@@ -271,6 +271,37 @@ class Agent {
     octPointsFlock(trails, 0, 0, sR, 0, 0, sI, false);
   }
 
+  void strandFlock(ArrayList<Agent> agents, float sR) {
+    int count =0;
+    float d;
+    float ssR = sR*sR;
+    float ang;
+    Vec3D dir, target = new Vec3D(), steer = new Vec3D();
+    for (Agent a : agents) {
+      if (a!= this) {
+        for (StrandPoint sp : a.strand.points) {
+          dir = sp.sub(pos);
+          d = dir.magSquared();
+          ang = vel.angleBetween(dir, true);
+          if (d<ssR /*&& ang < angVis*/) {
+            target.addSelf(sp);
+            count++;
+          }
+        }
+      }
+    }
+
+    // if something was found
+    if (count > 0) {
+      target.scaleSelf(1.0/count); // average vector
+      target.limit(maxVel);
+      steer = target.sub(vel);
+      //Vec3D n = mesh.getClosestVertexToPoint(pos).normal;
+      //steer.crossSelf(n);
+      steer.normalizeTo(-maxForce*20); // flee
+      acc.addSelf(steer);
+    }
+  }
 
   Vertex getOctClosest(PointOctree trails) {
     PointOctree leaf = trails.getLeafForPoint(pos);
@@ -345,7 +376,7 @@ class Agent {
     }
   }
 
-  void meshMove(AEMesh m, float mF) {
+  void meshMove(AEMesh m, float mI) {
     int ptInd = m.getClosestVertexToPoint(pos).id;
     Vertex[] neigh = m.getNeighbors(ptInd);
     float ang, minAng = Float.MAX_VALUE;
@@ -365,9 +396,14 @@ class Agent {
     // if something was found
     if (next>-1) {
       Vec3D steer = nextVel.sub(vel);
-      steer.normalizeTo(mF);
+      steer.normalizeTo(mI);
       acc.addSelf(steer);
     }
+  }
+
+  void meshMove2(AEMesh m, float mI) {
+    Vertex v = m.getClosestVertexToPoint(fPos);
+    seek(v, mI);
   }
 
   void fieldMove(AEMesh mesh, PointOctree field, float fI) {

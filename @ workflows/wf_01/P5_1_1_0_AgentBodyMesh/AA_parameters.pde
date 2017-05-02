@@ -1,5 +1,12 @@
 // parameters and global variables are collected here
 
+int strandLength = 30;
+int strandFreq = 10;
+float TipSearchRadius = 20;
+float abAlignRadius = 80;
+float abSeparationRadius = 20;
+float fieldIntensity = 0.02; // 0.04
+
 String meshFile = "spheres_fused.stl"; // if you want to import a different mesh change this
 
 ArrayList<Agent> agents;

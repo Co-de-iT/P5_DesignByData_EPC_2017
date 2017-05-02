@@ -42,7 +42,7 @@ ArrayList <Agent> importAgents(String fileName, Vec3D world) {
     // add type
     type = Integer.valueOf(elements[2]);
 
-    ag.add(new Agent(pt, vec, 10, world)); // here you decide strand length
+    ag.add(new Agent(pt, vec, strandLength, world)); // here you utilize strand length
   }
 
   return ag;

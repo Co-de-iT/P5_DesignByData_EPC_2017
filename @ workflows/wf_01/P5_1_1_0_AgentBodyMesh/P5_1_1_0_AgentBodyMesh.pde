@@ -15,14 +15,45 @@
  . an extended TriangleMesh class to implement vertex topology & vertex color + some mesh helping functions
  . Agent, AgentBody, Strand, Body, Tip, TensorPt classes
  
+ /////////////////////// NOTE ON SENSIBLE VARIABLES /////////////////////// 
+ 
+ The workflow has a few "sensible" variables, here they are with their location (most of them are now located in AA_parameters for convenience):
+ 
+ . *body shape and size* - Body class
+ try to design a real tri-dimensional body, they will ensure better connections to be established.
+ The forward vector is key - check how the body plane orients itself by hitting the 'd' key (debug view) after you have deployed the bodies with 'b' (but before locking them with 'l')
+ 
+ . *body type* - designed in the Body class, assigned in RHino+GH)
+ try with bodies that have radical different characteristics (i.e. one with branches in all directions + one more "directional")
+ and start simple - learn to control and experimentn with 2 body types as much as you can before stepping up to 3 or more bodies.
+ 
+ . *strand length and deposition frequency* - AA_parameters
+ control how many bodies are deployed and at which distance
+ 
+ . *tip search radius* - AA_parameters
+ the larger the radius, the more the probability to find connection
+ 
+ . *agent bodies alignment and separation radius* - AA_parameters
+ the former controls the range of planar alignment, the second the amount of separation between the cores
+ 
+ . *field* - Rhino + GH
+ go for gradients of vector orientations, or very few vectors in given directions (i.e. using lines)
+ 
+ . *field intensity* - AA_parameters
+ determines how strongly the bodies are influenced by the field in their orientation
+ 
+ . *mesh* (Rhino + GH)
+ start with simple meshes, also regular and symmetrical ones with (as much as possible) evenly spaced vertices, try to understand the influence of curvature and mesh proportions
+ 
+ . some advice:
+ 
+ . do not cram a lot of bodies together as in accumulating them (especialli if they are planar, they will just tend to stack up with no benefit for the complexity of the whole)
+ . 3D bodies, with controlled spacing and a well distributed, gradual field yeld the best results
  
  /////////////////////// NOTE ON BODY TYPE SELECTION /////////////////////// 
  
  body type is chosen when creating bodies from strands (tab Bodies_functions, makeBodies function)
  
- /////////////////////// NOTE ON STRAND LENGTH SELECTION /////////////////////// 
- 
- Strand length is decided on import (see TXTimport_FieldAgents tab, at the end of importAgents function)
  
  
  key map:
@@ -33,7 +64,7 @@
  T/t   display agent trails/change trail style
  f     display field
  d     debug view (bounding boxes, octrees, etc)
- . o     display octree points (under debug view)
+ o     display octree points (under debug view)
  
  b     generate bodies (phase 2)
  l     lock bodies (phase 2)
@@ -161,7 +192,7 @@ void draw() {
          }
          */
         //ag.updateOnMesh(agents, mesh, .2, false);
-        ag.updateOnMeshField(agents, octree, .1, mesh, .2, false);
+        ag.updateOnMeshField(agents, octree, .02, mesh, .1, false, strandFreq); // influences of field and mesh .1 and .2
         //ag.addForce(new Vec3D(.1,0,0)); // adds a directional force to the agent
         ag.display();
         ag.strand.display();
@@ -180,7 +211,7 @@ void draw() {
         bodies = makeBodies(mesh, agents);
         makeBod = true;
       }
-      runBodies(mesh, bodies);
+      runBodies(mesh, bodies, abAlignRadius, abSeparationRadius, fieldIntensity);
     }
   } else {
 
@@ -263,5 +294,5 @@ void keyPressed() {
 
   if (key=='b') phase2 = true;
   if (key=='l') lock = true;
-  if (key=='e') exportBodies(bodies, "Y_struct_topo");
+  if (key=='e') exportBodies(bodies, "_struct_topoXt");
 }

@@ -41,10 +41,10 @@ AgentBody[] importAgents(String fileName) {
 
     // add type
     type = Integer.valueOf(elements[2]);
-    
-    ag[i] = new AgentBody(pt,vec,type, false); // body type is inherited from the agents.txt file from GH
+
+    ag[i] = new AgentBody(pt, vec, i, type, false); // body type is inherited from the agents.txt file from GH
   }
-  
+
   return ag;
 }
 
@@ -91,8 +91,8 @@ TensorPt[] importField(String fileName) {
 
     // add type
     type = Integer.valueOf(elements[2]);
-    
-    f[i] = new TensorPt(pt,vec,type);
+
+    f[i] = new TensorPt(pt, vec, type);
   }
 
   return f;

@@ -6,7 +6,7 @@ class Body {
   Tip[] tips;
   boolean locked;
 
-  float tipRad=10;
+  float tipRad;
   float angVis = PI*0.5;
 
   // custom body constructors
@@ -14,7 +14,6 @@ class Body {
     this.tips = tips;
     this.type = type;
     locked = false;
-    //build(tips);
   }
 
   Body(Tip[] tips) {
@@ -22,14 +21,15 @@ class Body {
   }
 
   // default body constructors
-  Body(int type) {
+  Body(int type, float tipRad) {
     this.type = type;
+    this.tipRad = tipRad;
     build(type);
     locked = false;
   }
 
   Body() {
-    this(0);
+    this(0, 20);
   }
 
   void scale(float sf) {
@@ -40,19 +40,21 @@ class Body {
 
   void build(int type) {
     Vec3D pos;
+    int maxConn = 3;
     switch (type) {
     case 0:
       // tri-fork asymmetrical shape
       core = new Vec3D();
-      forward = new Vec3D(0, 0, 1);
-      tips = new Tip[3];
+      forward = new Vec3D(0, 1, 0); // Y axis
+      tips = new Tip[4];
       pos = new Vec3D(10, 0, 0).rotateZ(PI*0.4);
-      tips[0] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3); // because base is (0,0,0)
+      tips[0] = new Tip(pos, core, 0, tipRad, angVis, 0.01, maxConn); 
       pos = new Vec3D(13, 0, 0).rotateZ(PI*0.7);
-      tips[1] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[1] = new Tip(pos, core, 1, tipRad, angVis, 0.01, maxConn);
       pos = new Vec3D(15, 0, 0).rotateZ(PI*1.6);
-      tips[2] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
-
+      tips[2] = new Tip(pos, core, 2, tipRad, angVis, 0.01, maxConn);
+      pos = new Vec3D(0, 0, -10);
+      tips[3] = new Tip(pos, core, 3, tipRad, angVis, 0.01, maxConn);
       scale(1.5);
       break; 
 
@@ -62,13 +64,13 @@ class Body {
       forward = new Vec3D(0, 0, 1);
       tips = new Tip[4];
       pos = new Vec3D(10, 0, -3).rotateZ(PI*0.4);
-      tips[0] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[0] = new Tip(pos, core, 0, tipRad, angVis, 0.01, maxConn);
       pos = new Vec3D(13, 0, 0).rotateZ(PI*0.7);
-      tips[1] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[1] = new Tip(pos, core,1, tipRad, angVis, 0.01, maxConn);
       pos = new Vec3D(15, 0, 4).rotateZ(PI*1.25);
-      tips[2] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[2] = new Tip(pos, core,2, tipRad, angVis, 0.01, maxConn);
       pos = new Vec3D(15, 0, 0).rotateZ(PI*1.7);
-      tips[3] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[3] = new Tip(pos, core,3, tipRad, angVis, 0.01, maxConn);
 
       break;
     case 2:
@@ -77,11 +79,11 @@ class Body {
       forward = new Vec3D(0, 0, 1);
       tips = new Tip[3];
       pos = new Vec3D(10, 0, 0);
-      tips[0] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3); // because base is (0,0,0)
+      tips[0] = new Tip(pos, core,0, tipRad, angVis, 0.01, maxConn); // because base is (0,0,0)
       pos = new Vec3D(0, 10, 0);
-      tips[1] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[1] = new Tip(pos, core,1, tipRad, angVis, 0.01, maxConn);
       pos = new Vec3D(0, 0, 10);
-      tips[2] = new Tip(pos, new Vec3D(), tipRad, angVis, 0.01, 3);
+      tips[2] = new Tip(pos, core,2, tipRad, angVis, 0.01, maxConn);
       break;
     }
   }
