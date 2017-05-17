@@ -238,7 +238,7 @@ void draw() {
   // __________________________ mesh section
 
   if (meshDisp) meshDisplay(mesh, viewMode);
-  if (viewOct) octDisplay(octPts);
+  if (viewOct) drawOctree(octree,true,color(0));
 
 
   // __________________________ bounding box section

@@ -24,24 +24,31 @@ void initOctree() {
 
 // Octree creation from mesh
 
-PointOctree octreeFromMesh(Vec3D pivot, Vec3D extent, TriangleMesh mesh) {
-  PointOctree octree;
-
-  octree = new PointOctree(pivot, 1);  // centers octree in mesh bounding box
-  octree.setExtent(extent); // scales to extent vector
-
-  for (Vertex v : mesh.vertices.values()) {
-    octree.addPoint(v);
-  }
-  return octree;
-}
+/*
+ note on Octree:
+ 
+ . octree must always be a cube in shape
+ . pivot is the lower corner (min coordinates) and extension is the side of a cube
+ . must be initialized to its maximum size from the beginning
+ 
+ */
 
 PointOctree octreeFromMesh(TriangleMesh mesh) {
   PointOctree octree;
   AABB bBox = mesh.getBoundingBox();
   Vec3D extent = mesh.getBoundingBox().getExtent(); // AABB diagonal vector
-  Vec3D pivot = bBox.getMin().add(bBox.getMax()).scale(0.5); // finds mesh pivot (the AABB center)
-  octree = octreeFromMesh(pivot, extent, mesh);
+  // finds larger dimension
+  float maxDim = extent.x>extent.y? (extent.x > extent.z? extent.x: extent.z):(extent.y > extent.z? extent.y: extent.z);
+
+  Vec3D mPivot = bBox.getMin().add(bBox.getMax()).scale(0.5); // finds mesh pivot (the AABB center)
+
+  Vec3D pivot = mPivot.addSelf(new Vec3D(-1, -1, -1).scaleSelf(maxDim)); // find octree pivot
+
+  octree = new PointOctree(pivot, maxDim*2);
+  // adds mesh vertices to the Octree
+  for (Vertex v : mesh.vertices.values()) {
+    octree.addPoint(v);
+  }
   return octree;
 }
 
@@ -83,4 +90,44 @@ PShape octShape(PointOctree octree, color stroke, float weight) {
   o.endShape();
 
   return o;
+}
+
+// toxi display methods
+
+// this method recursively paints an entire octree structure
+void drawOctree(PointOctree node, boolean doShowGrid, int col) {
+  if (doShowGrid) {
+    drawBox(node);
+  }
+  if (node.getNumChildren() > 0) {
+    PointOctree[] children = node.getChildren();
+    for (int i = 0; i < 8; i++) {
+      if (children[i] != null) {
+        drawOctree(children[i], doShowGrid, col);
+      }
+    }
+  } else {
+    java.util.List points = node.getPoints();
+    if (points != null) {
+      stroke(col);
+      strokeWeight(5);
+      beginShape(POINTS);
+      int numP = points.size();
+      for (int i = 0; i < numP; i += 10) {
+        Vec3D p = (Vec3D)points.get(i);
+        vertex(p.x, p.y, p.z);
+      }
+      endShape();
+    }
+  }
+}
+
+void drawBox(PointOctree node) {
+  noFill();
+  stroke(0, 24);
+  strokeWeight(1);
+  pushMatrix();
+  translate(node.x, node.y, node.z);
+  box(node.getSize());
+  popMatrix();
 }
